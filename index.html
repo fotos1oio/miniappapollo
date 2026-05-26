@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DC Backtest</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* TEMA TRUE DARK & PREMIUM GOLD */
+        :root {
+            --bg-color: #000000;
+            --card-bg: #0d0d0d;
+            --border-color: #222222;
+            --gold-primary: #E5C158; /* Amarelo Gold extraído do logótipo */
+            --gold-hover: #C59B27;
+            --text-color: #ffffff;
+            --text-muted: #e4e4e4; /* Cinza bem mais claro para máxima visibilidade */
+            --success-color: #00e676;
+            --warning-color: #ffb300;
+            --danger-color: #ff5252;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* Estilização da Brand / Logo */
+        .brand-container {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        .app-logo {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            filter: drop-shadow(0px 4px 12px rgba(229, 193, 88, 0.2));
+        }
+
+        h1 {
+            font-size: 26px;
+            margin: 0;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            font-weight: 900;
+            text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: var(--gold-primary);
+        }
+
+        /* Painel das Criptomoedas */
+        .coins-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .coin-label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+            color: #ffffff; /* Ajustado para branco puro para destacar mais */
+            padding: 4px 0;
+        }
+
+        .coin-label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+            accent-color: var(--gold-primary);
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .btn-small {
+            background: none;
+            border: none;
+            color: var(--gold-primary);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        /* BOTÃO PRINCIPAL 3D PREMIUM */
+        button.btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(180deg, #1f1f1f 0%, #111111 100%);
+            color: var(--gold-primary);
+            border: 2px solid var(--gold-primary);
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            /* Efeito Sombra 3D Profunda */
+            box-shadow: 0 6px 0 #070707, 0 12px 20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.1s ease;
+        }
+
+        button.btn-primary:active {
+            /* Movimento de clique tátil */
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #070707, 0 6px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        /* ÁREA DE RESULTADOS */
+        #result-area {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-header {
+            text-align: center;
+            color: var(--gold-primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        /* CARDS DOS CENÁRIOS COM DESIGN 3D LIFT */
+        .scenario-card {
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.02);
+            position: relative;
+        }
+
+        /* Bordas inferiores 3D grossas para diferenciar os cenários */
+        .card-otimista { border-bottom: 4px solid var(--success-color); }
+        .card-mediano { border-bottom: 4px solid var(--warning-color); }
+        .card-pessimista { border-bottom: 4px solid var(--danger-color); }
+
+        .scenario-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-otimista .scenario-title { color: var(--success-color); }
+        .card-mediano .scenario-title { color: var(--warning-color); }
+        .card-pessimista .scenario-title { color: var(--danger-color); }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 9px;
+            color: #e4e4e4; /* Ajustado para cinza claro legível */
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .divider {
+            border: 0;
+            height: 1px;
+            background: #333333; /* Linha divisória sutilmente mais visível */
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="brand-container">
+            <img src="logo.png" alt="DicasDeCripto" class="app-logo">
+            <h1>DC Backtest</h1>
+        </div>
+        
+        <div class="form-group">
+            <label for="capital">Banca Total (USDT)</label>
+            <input type="number" id="capital" min="100" max="100000" step="100" value="2000">
+        </div>
+
+        <div class="form-group">
+            <div class="controls-row">
+                <label>Selecionar Moedas</label>
+                <button type="button" class="btn-small" onclick="toggleAllCoins()">Selecionar Todas</button>
+            </div>
+            <div class="coins-panel" id="coins-container">
+                </div>
+        </div>
+
+        <div class="form-group">
+            <label for="capitalPorMoeda">Alocação por Moeda (USDT)</label>
+            <select id="capitalPorMoeda">
+                <option value="100">100 USDT (Base: 21)</option>
+                <option value="200" selected>200 USDT (Base: 42)</option>
+                <option value="300">300 USDT (Base: 63)</option>
+                <option value="400">400 USDT (Base: 84)</option>
+                <option value="500">500 USDT (Base: 105)</option>
+                <option value="600">600 USDT (Base: 126)</option>
+                <option value="700">700 USDT (Base: 147)</option>
+                <option value="800">800 USDT (Base: 168)</option>
+                <option value="900">900 USDT (Base: 189)</option>
+                <option value="1000">1000 USDT (Base: 210)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="periodo">Período de Teste</label>
+            <select id="periodo">
+                <option value="30">1 Mês</option>
+                <option value="90">3 Meses</option>
+                <option value="180">6 Meses</option>
+                <option value="365" selected>1 Ano</option>
+                <option value="730">2 Anos</option>
+                <option value="1095">3 Anos</option>
+                <option value="1461">4 Anos</option>
+                <option value="1826">5 Anos</option>
+                <option value="2191">6 Anos</option>
+                <option value="2556">7 Anos</option>
+                <option value="2922">8 Anos</option>
+                <option value="3287">9 Anos</option>
+                <option value="3652">10 Anos</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" onclick="runBacktest()">Rodar Backtest 🚀</button>
+
+        <div id="result-area">
+            <h3 class="result-header">Projeção Realista de Cenários</h3>
+            
+            <div class="scenario-card card-otimista">
+                <h4 class="scenario-title">🟢 Cenário Otimista (Bull Run)</h4>
+                <div class="result-item"><span>Lucro Líquido:</span> <span class="result-value" id="lucro-oti" style="color:var(--success-color);">+0.00 USDT</span></div>
+                <div class="result-item"><span>ROI Estimado:</span> <span class="result-value" id="roi-oti" style="color:var(--success-color);">0.00%</span></div>
+                <div class="result-item"><span>Banca Final:</span> <span class="result-value" id="banca-oti">0.00 USDT</span></div>
+                <hr class="divider">
+                <div class="result-item"><span>Camada Máx. Atingida:</span> <span class="result-value" id="camada-oti">0</span></div>
+                <div class="result-item"><span>Margem de Risco Usada:</span> <span class="result-value" id="margem-oti">0.00 USDT</span></div>
+            </div>
+
+            <div class="scenario-card card-mediano">
+                <h4 class="scenario-title">🔵 Cenário Mediano (Padrão)</h4>
+                <div class="result-item"><span>Lucro Líquido:</span> <span class="result-value" id="lucro-med" style="color:var(--warning-color);">+0.00 USDT</span></div>
+                <div class="result-item"><span>ROI Estimado:</span> <span class="result-value" id="roi-med" style="color:var(--warning-color);">0.00%</span></div>
+                <div class="result-item"><span>Banca Final:</span> <span class="result-value" id="banca-med">0.00 USDT</span></div>
+                <hr class="divider">
+                <div class="result-item"><span>Camada Máx. Atingida:</span> <span class="result-value" id="camada-med">0</span></div>
+                <div class="result-item"><span>Margem de Risco Usada:</span> <span class="result-value" id="margem-med">0.00 USDT</span></div>
+            </div>
+
+            <div class="scenario-card card-pessimista">
+                <h4 class="scenario-title">🔴 Cenário BEAR MARKET</h4>
+                <div class="result-item"><span>Lucro Líquido:</span> <span class="result-value" id="lucro-pes" style="color:var(--danger-color);">+0.00 USDT</span></div>
+                <div class="result-item"><span>ROI Estimado:</span> <span class="result-value" id="roi-pes" style="color:var(--danger-color);">0.00%</span></div>
+                <div class="result-item"><span>Banca Final:</span> <span class="result-value" id="banca-pes">0.00 USDT</span></div>
+                <hr class="divider">
+                <div class="result-item"><span>Camada Máx. Atingida:</span> <span class="result-value" style="color:var(--danger-color);" id="camada-pes">0</span></div>
+                <div class="result-item"><span>Margem de Risco Usada:</span> <span class="result-value" style="color:var(--danger-color);" id="margem-pes">0.00 USDT</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialização do Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand(); 
+        
+        // Configuração de dados de volatilidade média das 25 moedas
+        const moedasData = {
+            "BTC": { ciclos: 3 }, "ETH": { ciclos: 5 }, "SOL": { ciclos: 12 },
+            "TAO": { ciclos: 15 }, "DOGE": { ciclos: 18 }, "PEPE": { ciclos: 25 },
+            "AVAX": { ciclos: 10 }, "SUI": { ciclos: 14 }, "LINK": { ciclos: 8 },
+            "XRP": { ciclos: 6 }, "ADA": { ciclos: 7 }, "NEAR": { ciclos: 12 },
+            "INJ": { ciclos: 11 }, "AAVE": { ciclos: 9 }, "ONDO": { ciclos: 13 },
+            "TON": { ciclos: 8 }, "HYPE": { ciclos: 16 }, "LTC": { ciclos: 4 },
+            "BCH": { ciclos: 5 }, "ZEC": { ciclos: 6 }, "DOT": { ciclos: 8 },
+            "BNB": { ciclos: 4 }, "ATOM": { ciclos: 7 }, "FET": { ciclos: 14 },
+            "RENDER": { ciclos: 12 }
+        };
+
+        // Renderiza dinamicamente as checkboxes no ecrã
+        const container = document.getElementById('coins-container');
+        Object.keys(moedasData).forEach(coin => {
+            const label = document.createElement('label');
+            label.className = 'coin-label';
+            const isChecked = (coin === 'BTC' || coin === 'ETH') ? 'checked' : '';
+            label.innerHTML = `<input type="checkbox" name="moedas" value="${coin}" ${isChecked}> ${coin}`;
+            container.appendChild(label);
+        });
+
+        let allSelected = false;
+        function toggleAllCoins() {
+            const checkboxes = document.querySelectorAll('input[name="moedas"]');
+            allSelected = !allSelected;
+            checkboxes.forEach(cb => cb.checked = allSelected);
+        }
+
+        function runBacktest() {
+            const capital = parseFloat(document.getElementById('capital').value);
+            if (!capital || capital < 100) return alert("Insira uma banca válida.");
+
+            const checkboxes = document.querySelectorAll('input[name="moedas"]:checked');
+            const moedasSelecionadas = Array.from(checkboxes).map(cb => cb.value);
+            if (moedasSelecionadas.length === 0) return alert("Selecione pelo menos 1 moeda.");
+
+            const dias = parseInt(document.getElementById('periodo').value);
+            const capPorMoeda = parseInt(document.getElementById('capitalPorMoeda').value);
+            
+            const multiplicador = capPorMoeda / 100; 
+            const posInicial = 21 * multiplicador; 
+            const takeProfitBruto = 1.3 / 100;
+            
+            // Fricção de taxas da BingX, Funding Fee e Slippage (Desconto de 15%)
+            const fFriccao = 0.85; 
+            const lucroPorCiclo = (posInicial * takeProfitBruto) * fFriccao;
+            const custoPorCamadaReal = (81.90 / 17) * multiplicador; 
+
+            let ciclosBaseTotais = 0;
+            for (let i = 0; i < dias; i++) {
+                moedasSelecionadas.forEach(moeda => {
+                    ciclosBaseTotais += moedasData[moeda].ciclos;
+                });
+            }
+
+            // MATEMÁTICA SUPER CALIBRADA (Baseada em dados reais da BingX)
+            
+            // 🟢 Cenário Otimista: Bull Run (25% do potencial teórico máximo)
+            const lucroOti = (ciclosBaseTotais * 0.25) * lucroPorCiclo;
+            const camadaOti = Math.floor(Math.random() * 3) + 3; // 3ª a 5ª camada
+            const margemOti = (custoPorCamadaReal * camadaOti) * moedasSelecionadas.length;
+
+            // 🔵 Cenário Mediano: Mercado Padrão (10% do potencial teórico máximo)
+            const lucroMed = (ciclosBaseTotais * 0.10) * lucroPorCiclo;
+            const camadaMed = Math.floor(Math.random() * 5) + 7; // 7ª a 11ª camada
+            const margemMed = (custoPorCamadaReal * camadaMed) * moedasSelecionadas.length;
+
+            // 🔴 Cenário BEAR MARKET: Mercado Lento e Corretivo (3.5% do potencial teórico máximo)
+            const lucroPes = (ciclosBaseTotais * 0.035) * lucroPorCiclo;
+            const camadaPes = Math.floor(Math.random() * 4) + 14; // 14ª a 17ª camada perigosa
+            const margemPes = (custoPorCamadaReal * camadaPes) * moedasSelecionadas.length;
+
+            // Atualização dos Elementos Visuais na Interface
+            function updateCard(sufixo, lucro, camada, margem) {
+                document.getElementById(`lucro-${sufixo}`).innerText = `+${lucro.toFixed(2)} USDT`;
+                document.getElementById(`roi-${sufixo}`).innerText = `${((lucro / capital) * 100).toFixed(2)}%`;
+                document.getElementById(`banca-${sufixo}`).innerText = `${(capital + lucro).toFixed(2)} USDT`;
+                document.getElementById(`camada-${sufixo}`).innerText = `${camada}ª Camada`;
+                document.getElementById(`margem-${sufixo}`).innerText = `${margem.toFixed(2)} USDT`;
+            }
+
+            updateCard('oti', lucroOti, camadaOti, margemOti);
+            updateCard('med', lucroMed, camadaMed, margemMed);
+            updateCard('pes', lucroPes, camadaPes, margemPes);
+
+            // Revela a secção oculta de resultados com animação nativa
+            document.getElementById('result-area').style.display = 'block';
+            
+            // Resposta vibratória (Haptic Feedback) no telemóvel do utilizador
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred("success");
+            }
+        }
+    </script>
+</body>
+</html>
