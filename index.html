@@ -329,17 +329,33 @@
         let tg = window.Telegram.WebApp;
         tg.expand(); 
         
-        // Configuração de dados de volatilidade média das 25 moedas
+        // Configuração de dados de volatilidade média das 25 moedas solicitadas
         const moedasData = {
-            "BTC": { ciclos: 3 }, "ETH": { ciclos: 5 }, "SOL": { ciclos: 12 },
-            "TAO": { ciclos: 15 }, "DOGE": { ciclos: 18 }, "PEPE": { ciclos: 25 },
-            "AVAX": { ciclos: 10 }, "SUI": { ciclos: 14 }, "LINK": { ciclos: 8 },
-            "XRP": { ciclos: 6 }, "ADA": { ciclos: 7 }, "NEAR": { ciclos: 12 },
-            "INJ": { ciclos: 11 }, "AAVE": { ciclos: 9 }, "ONDO": { ciclos: 13 },
-            "TON": { ciclos: 8 }, "HYPE": { ciclos: 16 }, "LTC": { ciclos: 4 },
-            "BCH": { ciclos: 5 }, "ZEC": { ciclos: 6 }, "DOT": { ciclos: 8 },
-            "BNB": { ciclos: 4 }, "ATOM": { ciclos: 7 }, "FET": { ciclos: 14 },
-            "RENDER": { ciclos: 12 }
+            "TAO": { ciclos: 15 },
+            "FET": { ciclos: 14 },
+            "HBAR": { ciclos: 10 },
+            "NEAR": { ciclos: 12 },
+            "XLM": { ciclos: 6 },
+            "LINK": { ciclos: 8 },
+            "SOL": { ciclos: 12 },
+            "TIA": { ciclos: 14 },
+            "SUI": { ciclos: 14 },
+            "INJ": { ciclos: 11 },
+            "DOT": { ciclos: 8 },
+            "ADA": { ciclos: 7 },
+            "AVAX": { ciclos: 10 },
+            "SEI": { ciclos: 15 },
+            "ATOM": { ciclos: 7 },
+            "FIL": { ciclos: 9 },
+            "DOGE": { ciclos: 18 },
+            "AAVE": { ciclos: 9 },
+            "ARB": { ciclos: 11 },
+            "OP": { ciclos: 12 },
+            "BTC": { ciclos: 3 },
+            "JUP": { ciclos: 16 },
+            "ICP": { ciclos: 8 },
+            "ONDO": { ciclos: 13 },
+            "RNDR": { ciclos: 12 }
         };
 
         // Renderiza dinamicamente as checkboxes no ecrã
@@ -347,7 +363,7 @@
         Object.keys(moedasData).forEach(coin => {
             const label = document.createElement('label');
             label.className = 'coin-label';
-            const isChecked = (coin === 'BTC' || coin === 'ETH') ? 'checked' : '';
+            const isChecked = (coin === 'BTC' || coin === 'TAO') ? 'checked' : '';
             label.innerHTML = `<input type="checkbox" name="moedas" value="${coin}" ${isChecked}> ${coin}`;
             container.appendChild(label);
         });
